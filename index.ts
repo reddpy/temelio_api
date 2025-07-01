@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import NonProfitObj from "./nonprofit_obj";
+import NonProfitObj, { OpStatus } from "./nonprofit_obj";
 
 const app = new Hono();
 
@@ -14,7 +14,7 @@ app.post("/nonprofit/create", async (c) => {
     address: body.address,
   });
 
-  if (result.msg === "error: nonprofit already exists") {
+  if (result.msg === OpStatus.ERROR_DUP) {
     c.status(303); //see other status code for duplicates
   }
 

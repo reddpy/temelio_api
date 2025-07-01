@@ -4,6 +4,18 @@ interface NonProfitData {
   address: string;
 }
 
+enum OpCode {
+  GET = "get",
+  CREATE = "create",
+  UPDATE = "update",
+  GETALL = "get all",
+}
+
+export enum OpStatus {
+  SUCCESS = "success",
+  ERROR_DUP = "error: duplicate exists",
+}
+
 class NonProfitObj {
   private non_profit_obj: Map<string, NonProfitData>;
 
@@ -21,8 +33,8 @@ class NonProfitObj {
     }
 
     return {
-      operation: "get",
-      msg: "success",
+      operation: OpCode.GET,
+      msg: OpStatus.SUCCESS,
       non_profit: this.non_profit_obj.get(email_key),
     };
   }
@@ -33,16 +45,16 @@ class NonProfitObj {
 
     if (get_result) {
       return {
-        operation: "create",
-        msg: "error: nonprofit already exists",
+        operation: OpCode.CREATE,
+        msg: OpStatus.ERROR_DUP,
         non_profit: get_result,
       };
     }
 
     this.pure_set(added_np_data);
     return {
-      operation: "create",
-      msg: "success",
+      operation: OpCode.CREATE,
+      msg: OpStatus.SUCCESS,
       non_profit: this.get(added_np_data.email, true),
     };
   }
@@ -50,8 +62,8 @@ class NonProfitObj {
   public update(updated_np_data: NonProfitData) {
     this.pure_set(updated_np_data);
     return {
-      operation: "update",
-      msg: "success",
+      operation: OpCode.UPDATE,
+      msg: OpStatus.SUCCESS,
       non_profit: this.get(updated_np_data.email, true),
     };
   }
@@ -62,8 +74,8 @@ class NonProfitObj {
     }
 
     return {
-      operation: "get_all",
-      msg: "success",
+      operation: OpCode.GETALL,
+      msg: OpStatus.SUCCESS,
       non_profit_all: this.non_profit_obj,
     };
   }
