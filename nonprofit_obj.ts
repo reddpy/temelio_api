@@ -4,7 +4,13 @@ interface NonProfitData {
   address: string;
 }
 
-enum OpCode {
+interface NonProfitDataUpdate {
+  name?: string;
+  updated_email?: string;
+  address?: string;
+}
+
+export enum OpCode {
   GET = "get",
   CREATE = "create",
   UPDATE = "update",
@@ -15,6 +21,8 @@ export enum OpStatus {
   SUCCESS = "success",
   ERROR_DUP = "error: duplicate exists",
   NOT_FOUND = "error: nonprofit not found",
+  NO_CHANGE = "error: no data change detected",
+  NO_FIELDS = "error: no fields to update provided",
 }
 
 class NonProfitObj {
@@ -61,9 +69,12 @@ class NonProfitObj {
     };
   }
 
-  public update(updated_np_data: NonProfitData) {
-    const existing_obj = this.get(updated_np_data.email, true);
+  public remove(email_key: string) {
+    this.non_profit_obj.delete(email_key);
+  }
 
+  public update(email_key: string, updated_np_data: NonProfitDataUpdate) {
+    const existing_obj: any = this.get(email_key, true);
     if (existing_obj === undefined) {
       return {
         operation: OpCode.UPDATE,
@@ -72,11 +83,22 @@ class NonProfitObj {
       };
     }
 
-    this.pure_set(updated_np_data);
+    const updated_object = {
+      name: updated_np_data.name?.trim() || existing_obj.name,
+      email: updated_np_data.updated_email?.trim() || existing_obj.email,
+      address: updated_np_data.address?.trim() || existing_obj.address,
+    };
+
+    // If email is changing, remove the old entry
+    if (updated_object.email !== existing_obj.email) {
+      this.remove(email_key);
+    }
+
+    this.pure_set(updated_object);
     return {
       operation: OpCode.UPDATE,
       msg: OpStatus.SUCCESS,
-      non_profit: this.get(updated_np_data.email, true),
+      non_profit: this.get(updated_object.email, true),
     };
   }
 
