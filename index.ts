@@ -9,9 +9,9 @@ app.post("/nonprofit/create", async (c) => {
   const body = await c.req.json();
 
   const result = nonprofit_data.add({
-    name: body.name,
-    email: body.email,
-    address: body.address,
+    name: String(body.name).trim(),
+    email: String(body.email).trim(),
+    address: String(body.address).trim(),
   });
 
   if (result.msg === OpStatus.ERROR_DUP) {

@@ -14,6 +14,7 @@ enum OpCode {
 export enum OpStatus {
   SUCCESS = "success",
   ERROR_DUP = "error: duplicate exists",
+  NOT_FOUND = "error: nonprofit not found",
 }
 
 class NonProfitObj {
@@ -29,7 +30,8 @@ class NonProfitObj {
 
   public get(email_key: string, internalCall: boolean = false) {
     if (internalCall) {
-      return this.non_profit_obj.get(email_key);
+      const found_obj = this.non_profit_obj.get(email_key);
+      return found_obj !== undefined ? found_obj : undefined;
     }
 
     return {
@@ -60,6 +62,16 @@ class NonProfitObj {
   }
 
   public update(updated_np_data: NonProfitData) {
+    const existing_obj = this.get(updated_np_data.email, true);
+
+    if (existing_obj === undefined) {
+      return {
+        operation: OpCode.UPDATE,
+        msg: OpStatus.NOT_FOUND,
+        non_profit: updated_np_data,
+      };
+    }
+
     this.pure_set(updated_np_data);
     return {
       operation: OpCode.UPDATE,
