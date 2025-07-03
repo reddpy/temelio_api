@@ -36,22 +36,14 @@ class NonProfitObj {
     this.non_profit_obj.set(np_data.email, np_data);
   }
 
-  public get(email_key: string, internalCall: boolean = false) {
-    if (internalCall) {
-      const found_obj = this.non_profit_obj.get(email_key);
-      return found_obj !== undefined ? found_obj : undefined;
-    }
-
-    return {
-      operation: OpCode.GET,
-      msg: OpStatus.SUCCESS,
-      non_profit: this.non_profit_obj.get(email_key),
-    };
+  public get(email_key: string) {
+    const found_obj = this.non_profit_obj.get(email_key);
+    return found_obj !== undefined ? found_obj : undefined;
   }
 
   public add(added_np_data: NonProfitData) {
     const email_key = added_np_data.email;
-    const get_result = this.get(email_key, true);
+    const get_result = this.get(email_key);
 
     if (get_result) {
       return {
@@ -65,7 +57,7 @@ class NonProfitObj {
     return {
       operation: OpCode.CREATE,
       msg: OpStatus.SUCCESS,
-      non_profit: this.get(added_np_data.email, true),
+      non_profit: this.get(added_np_data.email),
     };
   }
 
@@ -74,7 +66,7 @@ class NonProfitObj {
   }
 
   public update(email_key: string, updated_np_data: NonProfitDataUpdate) {
-    const existing_obj: any = this.get(email_key, true);
+    const existing_obj: any = this.get(email_key);
     if (existing_obj === undefined) {
       return {
         operation: OpCode.UPDATE,
@@ -98,20 +90,12 @@ class NonProfitObj {
     return {
       operation: OpCode.UPDATE,
       msg: OpStatus.SUCCESS,
-      non_profit: this.get(updated_object.email, true),
+      non_profit: this.get(updated_object.email),
     };
   }
 
-  public get_all(internalCall: boolean = false) {
-    if (internalCall) {
-      return this.non_profit_obj;
-    }
-
-    return {
-      operation: OpCode.GETALL,
-      msg: OpStatus.SUCCESS,
-      non_profit_all: this.non_profit_obj,
-    };
+  public get_all() {
+    return this.non_profit_obj;
   }
 }
 

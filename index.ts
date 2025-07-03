@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import NonProfitObj, { OpStatus, OpCode } from "./nonprofit_obj";
+import EmailObj from "./email_obj";
 
 const app = new Hono();
 
 const nonprofit_data = new NonProfitObj();
+const email_sdk = new EmailObj();
 
 app.post("/nonprofit/create", async (c) => {
   const body = await c.req.json();
@@ -61,5 +63,25 @@ app.patch("/nonprofit/update", async (c) => {
   c.status(200);
   return c.json(result);
 });
+
+app.post("/email/nonprofit/send/bulk", async (c) => {
+  const body = await c.req.json();
+  const email_template = body.email_template;
+  const recipeints = body.recipients;
+
+  const all_nonprofits = nonprofit_data.get_all();
+  const error_reps = [];
+  for (const rec of recipeints) {
+    const found = all_nonprofits.get(rec);
+    if (found === undefined) {
+      error_reps.push(found);
+    }
+  }
+
+  c.status(404);
+  return c.json({});
+});
+
+app.get("email/nonprofit/retreive", async (c) => {});
 
 export default app;
