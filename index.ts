@@ -70,6 +70,7 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
   const email_template = body.email_template;
   const recipients = body.recipients;
   const subject = body.subject;
+  const sender = body.sender;
 
   const all_nonprofits = nonprofit_data.get_all();
   const error_reps = [];
@@ -85,7 +86,16 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
     const op_result_error = {
       operation: EmailOpCode.SEND_BULK,
       msg: EmailOpStatus.MISSING_SUBJECT,
-      recipeints: error_reps,
+    };
+
+    c.status(400);
+    return c.json(op_result_error);
+  }
+
+  if (sender === undefined) {
+    const op_result_error = {
+      operation: EmailOpCode.SEND_BULK,
+      msg: EmailOpStatus.MISSING_SENDER,
     };
 
     c.status(400);
@@ -107,7 +117,10 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
 
   let template_var_error = false;
   for (let templ_var of template_variables) {
-    if (["name", "email", "address", "subject"].includes(templ_var) === false) {
+    if (
+      ["name", "email", "address", "subject", "sender"].includes(templ_var) ===
+      false
+    ) {
       //would want to get this list of vars dynamically, not hard code
       template_var_error = true;
     }
@@ -126,6 +139,7 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
     recipients,
     email_template,
     subject,
+    sender,
   );
 
   if (mail_send_result.msg === EmailOpStatus.SUCCESS) {
