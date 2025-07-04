@@ -4,6 +4,7 @@ import { nonprofit_data } from "./index";
 interface EmailObject {
   email_recipient: string;
   email_messages: {
+    sender: string;
     subject: string;
     template: string;
     body: string;
@@ -20,6 +21,7 @@ export enum EmailOpStatus {
   SUCCESS = "success",
   NOT_FOUND = "error: recipients not found",
   MISSING_SUBJECT = "error: missing subject",
+  MISSING_SENDER = "error: missing sender",
   INVALID_VARS = "error: invalid template variables",
 }
 
@@ -40,7 +42,12 @@ class EmailObj {
     return [...new Set(variables)]; // Simpler, order may vary
   }
 
-  public send_email(recipients: [string], body: string, subject: string) {
+  public send_email(
+    recipients: [string],
+    body: string,
+    subject: string,
+    sender: string,
+  ) {
     const np_data = nonprofit_data.get_all();
 
     for (let recipient of recipients) {
@@ -56,6 +63,7 @@ class EmailObj {
 
       let email_rec_obj = this.email_obj_data.get(recipient);
       let new_email = {
+        sender: sender,
         subject: subject,
         template: body,
         body: template_match,
