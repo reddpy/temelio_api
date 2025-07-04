@@ -10,58 +10,24 @@ const email_sdk = new EmailObj();
 app.post("/nonprofit/create", async (c) => {
   const body = await c.req.json();
 
+  const get_result = nonprofit_data.get(String(body.email).trim());
+
+  if (get_result) {
+    c.status(409);
+    return c.json({
+      operation: OpCode.CREATE,
+      msg: OpStatus.ERROR_DUP,
+      non_profit: get_result,
+    });
+  }
+
   const result = nonprofit_data.add({
     name: String(body.name).trim(),
     email: String(body.email).trim(),
     address: String(body.address).trim(),
   });
 
-  if (result.msg === OpStatus.ERROR_DUP) {
-    c.status(303); //see other status code for duplicates
-  }
-
-  return c.json(result);
-});
-
-app.patch("/nonprofit/update", async (c) => {
-  const body = await c.req.json();
-
-  if (!body.email) {
-    c.status(400);
-    return c.json({ error: "Email is required" });
-  }
-
-  const hasUpdates = body.name || body.address || body.updated_email;
-  if (!hasUpdates) {
-    c.status(400);
-
-    return c.json({
-      operation: OpCode.UPDATE,
-      msg: OpStatus.NO_FIELDS,
-      non_profit: {
-        ...body,
-        name: "missing",
-        address: "missing",
-        updated_email: "missing",
-      },
-    });
-  }
-
-  const updateData = {
-    name: body.name?.trim(),
-    email: body.email.trim(),
-    address: body.address?.trim(),
-    updated_email: body.updated_email?.trim(),
-  };
-
-  const result = nonprofit_data.update(updateData.email, updateData);
-
-  if (result.msg === OpStatus.NOT_FOUND) {
-    c.status(404);
-    return c.json(result);
-  }
-
-  c.status(200);
+  c.status(201);
   return c.json(result);
 });
 
@@ -149,6 +115,27 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
   return c.json(mail_send_result);
 });
 
-app.get("email/nonprofit/retrieve", async (c) => {});
+app.get("/email/nonprofit/retrieve/:email", async (c) => {
+  let email = c.req.param("email");
+
+  const emails_get = email_sdk.get_emails_by_email_key(email);
+
+  if (emails_get === undefined) {
+    c.status(404);
+    return c.json({
+      operation: EmailOpCode.GET_ALL_EMAILS,
+      msg: EmailOpStatus.EMAIL_NOT_FOUND,
+      email: email,
+    });
+  }
+
+  c.status(200);
+  return c.json({
+    operation: EmailOpCode.GET_ALL_EMAILS,
+    msg: EmailOpStatus.SUCCESS,
+    query_params: email,
+    query_result: emails_get,
+  });
+});
 
 export default app;

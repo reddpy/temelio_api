@@ -4,6 +4,7 @@ import { nonprofit_data } from "./index";
 interface EmailObject {
   email_recipient: string;
   email_messages: {
+    recipient: string;
     sender: string;
     subject: string;
     template: string;
@@ -14,12 +15,13 @@ interface EmailObject {
 
 export enum EmailOpCode {
   SEND_BULK = "send:bulk",
-  GETALL = "get all",
+  GET_ALL_EMAILS = "get all emails",
 }
 
 export enum EmailOpStatus {
   SUCCESS = "success",
-  NOT_FOUND = "error: recipients not found",
+  NOT_FOUND = "error: recipient(s) not found",
+  EMAIL_NOT_FOUND = "error: no emails sent to this user",
   MISSING_SUBJECT = "error: missing subject",
   MISSING_SENDER = "error: missing sender",
   INVALID_VARS = "error: invalid template variables",
@@ -40,6 +42,10 @@ class EmailObj {
     if (!matches) return [];
     const variables = matches.map((match) => match.slice(1, -1).trim());
     return [...new Set(variables)]; // Simpler, order may vary
+  }
+
+  public get_emails_by_email_key(email_key: string) {
+    return this.email_obj_data.get(email_key);
   }
 
   public send_email(
@@ -63,6 +69,7 @@ class EmailObj {
 
       let email_rec_obj = this.email_obj_data.get(recipient);
       let new_email = {
+        recipient: recipient,
         sender: sender,
         subject: subject,
         template: body,
