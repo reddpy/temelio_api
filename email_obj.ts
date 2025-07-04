@@ -38,10 +38,10 @@ class EmailObj {
   }
 
   static getTemplateVariables(template: string) {
-    const matches = template.match(/\{([^}]+)\}/g);
+    const matches = template.match(/\{\{([^}]+)\}\}/g); // Changed from /\{([^}]+)\}/g
     if (!matches) return [];
-    const variables = matches.map((match) => match.slice(1, -1).trim());
-    return [...new Set(variables)]; // Simpler, order may vary
+    const variables = matches.map((match) => match.slice(2, -2).trim()); // Changed from slice(1, -1)
+    return [...new Set(variables)];
   }
 
   public get_emails_by_email_key(email_key: string) {
@@ -60,11 +60,13 @@ class EmailObj {
       const non_profit = np_data.get(recipient);
 
       const template = Handlebars.compile(
-        "Sending money to nonprofit {{ name }} at address {{ address }}", //!!!!!NOTE: replace with 'body' variable
+        //"Sending money to nonprofit {{ name }} at address {{ address }}", //!!!!!NOTE: replace with 'body' variable
+        body,
       );
       const template_match = template({
         ...non_profit,
         subject,
+        sender,
       });
 
       let email_rec_obj = this.email_obj_data.get(recipient);

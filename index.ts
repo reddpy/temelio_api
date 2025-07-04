@@ -72,7 +72,7 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
     const op_result_error = {
       operation: EmailOpCode.SEND_BULK,
       msg: EmailOpStatus.NOT_FOUND,
-      recipeints: error_reps,
+      recipients: error_reps,
     };
 
     c.status(404);
@@ -83,6 +83,7 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
 
   let template_var_error = false;
   for (let templ_var of template_variables) {
+    console.log(templ_var);
     if (
       ["name", "email", "address", "subject", "sender"].includes(templ_var) ===
       false
@@ -93,7 +94,7 @@ app.post("/email/nonprofit/send/bulk", async (c) => {
   }
 
   if (template_var_error) {
-    c.status(404);
+    c.status(400);
     return c.json({
       operation: EmailOpCode.SEND_BULK,
       msg: EmailOpStatus.INVALID_VARS,
